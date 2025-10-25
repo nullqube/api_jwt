@@ -9,8 +9,6 @@ class User < ApplicationRecord
                     format: { with: URI::MailTo::EMAIL_REGEXP }
 
   validates :password, length: { minimum: 8 }, if: :password_digest_changed?
-  # TODO: Re-enable password presence validation if needed
-  # validates :password, presence: true, if: :password_required?
 
   # Callbacks
   before_save :downcase_email
