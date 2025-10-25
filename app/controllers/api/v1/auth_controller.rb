@@ -63,6 +63,21 @@ module Api
         render json: tokens
       end
 
+      # DELETE /api/v1/auth/logout
+      def logout
+        device_id = request.headers["X-Device-Id"]
+        if device_id && current_user.refresh_tokens.exists?(device_id: device_id)
+          current_user.revoke_token!(device_id)
+        end
+        head :no_content
+      end
+
+      # DELETE /api/v1/auth/logout_all
+      def logout_all
+        current_user.revoke_all_tokens!
+        head :no_content
+      end
+
       private
 
       def signup_params
