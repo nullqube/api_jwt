@@ -1,6 +1,6 @@
 module Api
   module V1
-    class AuthController < APIBaseController
+    class AuthController < ApiBaseController
       skip_before_action :authenticate_user!, only: [ :signup, :login, :refresh ]
 
       # POST /api/v1/auth/signup
