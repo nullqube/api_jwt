@@ -78,6 +78,26 @@ module Api
         head :no_content
       end
 
+      # GET /api/v1/auth/me
+      def me
+        render json: { user: user_json(current_user) }
+      end
+
+      # GET /api/v1/auth/sessions
+      def sessions
+        sessions = current_user.active_sessions.map do |token|
+          {
+            device_id: token.device_id,
+            device_name: token.device_name,
+            ip_address: token.ip_address,
+            last_used_at: token.last_used_at,
+            created_at: token.created_at
+          }
+        end
+
+        render json: { sessions: sessions }
+      end
+
       private
 
       def signup_params
