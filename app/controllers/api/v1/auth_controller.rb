@@ -18,10 +18,29 @@ module Api
         end
       end
 
+      # POST /api/v1/auth/login
+      def login
+        user = User.find_by(email: login_params[:email].downcase)
+
+        if user&.authenticate(login_params[:password])
+          tokens = generate_tokens_for_user(user)
+          render json: {
+            user: user_json(user),
+            **tokens
+          }
+        else
+          render json: { error: "Invalid email or password" }, status: :unauthorized
+        end
+      end
+
       private
 
       def signup_params
         params.require(:user).permit(:email, :password, :password_confirmation)
+      end
+
+      def login_params
+        params.require(:user).permit(:email, :password)
       end
 
       def generate_device_id
