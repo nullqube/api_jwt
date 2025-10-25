@@ -27,10 +27,40 @@ module Api
           render json: {
             user: user_json(user),
             **tokens
-          }
+          }, status: :ok
         else
           render json: { error: "Invalid email or password" }, status: :unauthorized
         end
+      end
+
+      # POST /api/v1/auth/refresh
+      def refresh
+        refresh_token_string = request.headers["X-Refresh-Token"]
+
+        unless refresh_token_string
+          return render json: { error: "Refresh token required" }, status: :unauthorized
+        end
+
+        # refresh_token = RefreshToken.find_by(token: refresh_token_string)
+        # Use find_by + explicit revoked check in one query
+        # Atomic fetch: only active, unrevoked, non-expired tokens
+        refresh_token = RefreshToken.where(token: refresh_token_string)
+                                    .where(revoked: false)
+                                    .where("expires_at > ?", Time.current)
+                                    .first
+
+        unless refresh_token&.active?
+          Rails.logger.warn "Invalid refresh token used from IP: #{request.remote_ip}"
+          return render json: { error: "Invalid or expired refresh token" }, status: :unauthorized
+        end
+
+        # Mark as used and revoke in one update
+        # Atomic: To avoid a tiny window where last_used_at is
+        # updated but revoke! fails, combine them:
+        refresh_token.update!(revoked: true, last_used_at: Time.current)
+
+        tokens = generate_tokens_for_user(refresh_token.user)
+        render json: tokens
       end
 
       private
