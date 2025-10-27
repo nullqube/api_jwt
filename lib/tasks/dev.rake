@@ -1,3 +1,11 @@
+# lib/tasks/dev.rake
+# Rake tasks for setting up and managing the development environment.
+# Includes tasks for creating test users and generating test tokens.
+# Usage:
+#  rake dev:setup
+#  rake dev:test_tokens[email]
+#  Replace 'email' with the desired user's email or omit to use the default test user.
+
 namespace :dev do
   desc "Setup development environment"
   task setup: :environment do
