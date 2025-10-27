@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_23_144430) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_27_135654) do
   create_table "refresh_tokens", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "token", null: false
@@ -35,7 +35,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_23_144430) do
     t.boolean "email_validated", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "password_reset_token"
+    t.datetime "password_reset_sent_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["password_reset_token"], name: "index_users_on_password_reset_token", unique: true, where: "password_reset_token IS NOT NULL"
   end
 
   add_foreign_key "refresh_tokens", "users"
