@@ -31,5 +31,10 @@ module ApiJwt
 
     # Add Rack::Attack middleware
     config.middleware.use Rack::Attack
+    #     config.force_ssl = true if Rails.env.production?
+    #     config.session_store :disabled
+    #     config.middleware.delete ActionDispatch::Cookies
+    #     config.middleware.delete ActionDispatch::Session::CookieStore
+    #     config.middleware.insert_before 0, Rack::Cors
   end
 end
