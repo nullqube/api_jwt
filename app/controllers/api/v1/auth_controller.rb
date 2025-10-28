@@ -98,6 +98,40 @@ module Api
         render json: { sessions: sessions }
       end
 
+      def password_reset_request
+        email = params.dig(:user, :email)&.downcase
+        user = User.find_by(email: email)
+        if user
+          token = user.generate_password_reset_token
+          PasswordResetMailer.with(
+            token: token,
+            email: user.email,
+            host: request.headers["Origin"] || "localhost:8100"  # Adjust for prod
+          ).reset_email.deliver_later
+        end
+
+        head :ok  # Same for non-existent emails (prevents enumeration)
+      end
+
+      def password_reset
+        token = params[:token]
+        user_params = password_reset_params
+        user = User.find_by(
+          password_reset_token: token,
+          email: user_params[:email]
+          )
+        if user && user.password_reset_token_valid?
+          if user.update(password: user_params[:password])
+            user.clear_password_reset_token
+            render json: { message: "Password reset successful" }
+          else
+            render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+          end
+        else
+          render json: { error: "Invalid or expired token" }, status: :unauthorized
+        end
+      end
+
       private
 
       def signup_params
@@ -106,6 +140,10 @@ module Api
 
       def login_params
         params.require(:user).permit(:email, :password)
+      end
+
+      def password_reset_params
+        params.require(:user).permit(:email, :password, :password_confirmation)
       end
 
       def generate_device_id
