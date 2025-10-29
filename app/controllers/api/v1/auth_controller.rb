@@ -49,7 +49,7 @@ module Api
                                     .where("expires_at > ?", Time.current)
                                     .first
 
-        unless refresh_token&.active?
+        unless refresh_token
           Rails.logger.warn "Invalid refresh token used from IP: #{request.remote_ip}"
           return render json: { error: "Invalid or expired refresh token" }, status: :unauthorized
         end
@@ -58,7 +58,6 @@ module Api
         # Atomic: To avoid a tiny window where last_used_at is
         # updated but revoke! fails, combine them:
         refresh_token.update!(revoked: true, last_used_at: Time.current)
-
         tokens = generate_tokens_for_user(refresh_token.user)
         render json: tokens
       end
@@ -106,7 +105,7 @@ module Api
           PasswordResetMailer.with(
             token: token,
             email: user.email,
-            host: request.headers["Origin"] || "localhost:8100"  # Adjust for prod
+            host: request.headers["Origin"] || "http://localhost:8100"  # Adjust for prod
           ).reset_email.deliver_later
         end
 
