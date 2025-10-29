@@ -9,7 +9,8 @@ Rails.application.routes.draw do
       delete "auth/logout_all", to: "auth#logout_all"
       get "auth/me", to: "auth#me"
       get "auth/sessions", to: "auth#sessions"
-
+      post "auth/password_reset/request", to: "auth#password_reset_request"
+      patch "auth/password_reset", to: "auth#password_reset"
       # Add your other API routes here
       # resources :posts
       # resources :comments
